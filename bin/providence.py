@@ -3,6 +3,7 @@ import sys
 import argparse
 from pathlib import Path
 import os
+import re
 
 import requests
 
@@ -46,10 +47,12 @@ def cache_suffixes(url="https://publicsuffix.org/list/public_suffix_list.dat"):
 
 
 def guess_name(name=None, tlds=None):
+    guessed_names = set()
     if name is None:
         return False
     for t in tlds:
-        print(f"{name}.{t}")
+        guessed_names.add(f"{name}.{t}")
+    return guessed_names
 
 
 if not args.tld:
@@ -57,4 +60,19 @@ if not args.tld:
 else:
     tlds = [args.tld]
 
-guess_name(name=args.name, tlds=tlds)
+results = set()
+
+if re.search(r' {1,}', args.name):
+    # replace with -
+    name = args.name
+    p = name.replace(" ", "-")
+    results.update(guess_name(name=p, tlds=tlds))
+    # combined
+    p = name.replace(" ", "")
+    results.update(guess_name(name=p, tlds=tlds))
+    # try with removal of word
+
+else:
+    results.update(guess_name(name=args.name, tlds=tlds))
+
+print(results)
