@@ -71,7 +71,8 @@ if re.search(r' {1,}', args.name):
     p = name.replace(" ", "")
     results.update(guess_name(name=p, tlds=tlds))
     # try with removal of word
-
+    for word in args.name.split(" "):
+        results.update(guess_name(name=word, tlds=tlds))
 else:
     results.update(guess_name(name=args.name, tlds=tlds))
 
