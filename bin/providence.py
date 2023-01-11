@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 import os
 import re
+import orjson
 
 import requests
 
@@ -20,6 +21,7 @@ parser.add_argument(
     type=str,
     help="Limit to a specific TLD (if not, all known TLDs are tested)",
 )
+#parser.add_argument("","")
 
 args = parser.parse_args()
 
@@ -65,10 +67,14 @@ results = set()
 if re.search(r' {1,}', args.name):
     # replace with -
     name = args.name
+    reversed_name = " ".join(args.name.split(" ")[::-1])
     p = name.replace(" ", "-")
     results.update(guess_name(name=p, tlds=tlds))
-    # combined
+    p = reversed_name.replace(" ", "-")
+    results.update(guess_name(name=p, tlds=tlds))
     p = name.replace(" ", "")
+    results.update(guess_name(name=p, tlds=tlds))
+    p = reversed_name.replace(" ", "")
     results.update(guess_name(name=p, tlds=tlds))
     # try with removal of word
     for word in args.name.split(" "):
@@ -76,4 +82,8 @@ if re.search(r' {1,}', args.name):
 else:
     results.update(guess_name(name=args.name, tlds=tlds))
 
-print(results)
+output = {}
+output['results'] = list(results)
+j = orjson.dumps(output).decode()
+
+print(j)
