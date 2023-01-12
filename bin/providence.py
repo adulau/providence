@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(
     epilog="More info: https://github.com/adulau/providence",
 )
 
-parser.add_argument("-v", help="increase output verbosity", action="store_true")
+parser.add_argument("-v", help="Increase output verbosity", action="store_true")
 parser.add_argument(
     "-n", "--name", type=str, help="Company name to find", action="append"
 )
@@ -23,6 +23,9 @@ parser.add_argument(
     type=str,
     help="Limit to a specific TLD (if not, all known TLDs are tested)",
     action="append",
+)
+parser.add_argument(
+    "-dns", help="Do DNS lookup validation", action="store_true", default=False
 )
 
 args = parser.parse_args()
@@ -70,8 +73,8 @@ results = set()
 def permutation_name(name_arg=None):
     if name_arg is None:
         return False
+    name_arg = name_arg.lower()
     if re.search(r' {1,}', name_arg):
-        # replace with -
         name = name_arg
         reversed_name = " ".join(name_arg.split(" ")[::-1])
         p = name.replace(" ", "-")
@@ -82,7 +85,6 @@ def permutation_name(name_arg=None):
         results.update(guess_name(name=p, tlds=tlds))
         p = reversed_name.replace(" ", "")
         results.update(guess_name(name=p, tlds=tlds))
-        # try with removal of word
         for word in name_arg.split(" "):
             results.update(guess_name(name=word, tlds=tlds))
     else:
@@ -94,6 +96,6 @@ for name in args.name:
 
 output = {}
 output['results'] = list(results)
-j = orjson.dumps(output).decode()
-
-print(j)
+if not args.dns:
+    j = orjson.dumps(output).decode()
+    print(j)
