@@ -20,6 +20,7 @@ parser.add_argument(
     "--tld",
     type=str,
     help="Limit to a specific TLD (if not, all known TLDs are tested)",
+    action="append"
 )
 #parser.add_argument("","")
 
@@ -60,7 +61,7 @@ def guess_name(name=None, tlds=None):
 if not args.tld:
     tlds = cache_suffixes()
 else:
-    tlds = [args.tld]
+    tlds = args.tld
 
 results = set()
 
