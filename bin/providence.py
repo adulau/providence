@@ -14,15 +14,16 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument("-v", help="increase output verbosity", action="store_true")
-parser.add_argument("-n", "--name", type=str, help="Company name to find")
+parser.add_argument(
+    "-n", "--name", type=str, help="Company name to find", action="append"
+)
 parser.add_argument(
     "-t",
     "--tld",
     type=str,
     help="Limit to a specific TLD (if not, all known TLDs are tested)",
-    action="append"
+    action="append",
 )
-#parser.add_argument("","")
 
 args = parser.parse_args()
 
@@ -65,23 +66,31 @@ else:
 
 results = set()
 
-if re.search(r' {1,}', args.name):
-    # replace with -
-    name = args.name
-    reversed_name = " ".join(args.name.split(" ")[::-1])
-    p = name.replace(" ", "-")
-    results.update(guess_name(name=p, tlds=tlds))
-    p = reversed_name.replace(" ", "-")
-    results.update(guess_name(name=p, tlds=tlds))
-    p = name.replace(" ", "")
-    results.update(guess_name(name=p, tlds=tlds))
-    p = reversed_name.replace(" ", "")
-    results.update(guess_name(name=p, tlds=tlds))
-    # try with removal of word
-    for word in args.name.split(" "):
-        results.update(guess_name(name=word, tlds=tlds))
-else:
-    results.update(guess_name(name=args.name, tlds=tlds))
+
+def permutation_name(name_arg=None):
+    if name_arg is None:
+        return False
+    if re.search(r' {1,}', name_arg):
+        # replace with -
+        name = name_arg
+        reversed_name = " ".join(name_arg.split(" ")[::-1])
+        p = name.replace(" ", "-")
+        results.update(guess_name(name=p, tlds=tlds))
+        p = reversed_name.replace(" ", "-")
+        results.update(guess_name(name=p, tlds=tlds))
+        p = name.replace(" ", "")
+        results.update(guess_name(name=p, tlds=tlds))
+        p = reversed_name.replace(" ", "")
+        results.update(guess_name(name=p, tlds=tlds))
+        # try with removal of word
+        for word in name_arg.split(" "):
+            results.update(guess_name(name=word, tlds=tlds))
+    else:
+        results.update(guess_name(name=name_arg, tlds=tlds))
+
+
+for name in args.name:
+    permutation_name(name_arg=name)
 
 output = {}
 output['results'] = list(results)
